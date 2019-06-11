@@ -1,4 +1,4 @@
-package com.github.zeab.j2sjavanethttpclient.seed
+package zeab.j2sjavanethttpclient.seed
 
 trait HttpIngressTypes{
   val localhost: String = "localhost"

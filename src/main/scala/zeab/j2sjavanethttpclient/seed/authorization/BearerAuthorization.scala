@@ -1,7 +1,6 @@
-package com.github.zeab.j2sjavanethttpclient.seed.authorization
+package zeab.j2sjavanethttpclient.seed.authorization
 
-//Imports
-import com.github.zeab.j2sjavanethttpclient.seed.{HttpHeaders, HttpMetaDataKeys}
+import zeab.j2sjavanethttpclient.seed.{HttpHeaders, HttpMetaDataKeys}
 
 object BearerAuthorization {
 

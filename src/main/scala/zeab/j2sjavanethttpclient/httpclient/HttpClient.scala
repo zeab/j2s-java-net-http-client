@@ -1,10 +1,10 @@
-package com.github.zeab.j2sjavanethttpclient.httpclient
+package zeab.j2sjavanethttpclient.httpclient
 
 //Imports
-import com.github.zeab.j2sjavanethttpclient.seed.HttpMethods.get
-import com.github.zeab.j2sjavanethttpclient.seed.HttpSeed
-import com.github.zeab.j2sjavanethttpclient.seed.authorization.BearerAuthorization
-import com.github.zeab.j2sjavanethttpclient.seed.httpclientmessages.{HttpClientError, HttpClientResponse}
+import zeab.j2sjavanethttpclient.seed.HttpMethods.get
+import zeab.j2sjavanethttpclient.seed.HttpSeed
+import zeab.j2sjavanethttpclient.seed.authorization.BearerAuthorization
+import zeab.j2sjavanethttpclient.seed.httpclientmessages.{HttpClientError, HttpClientResponse}
 //Java
 import java.net.{HttpURLConnection, URL}
 import java.nio.charset.CodingErrorAction

@@ -1,7 +1,6 @@
-package com.github.zeab.j2sjavanethttpclient.seed
+package zeab.j2sjavanethttpclient.seed
 
-//Imports
-import HttpMethods.get
+import zeab.j2sjavanethttpclient.seed.HttpMethods.get
 
 case class HttpSeed(
                      url: String,

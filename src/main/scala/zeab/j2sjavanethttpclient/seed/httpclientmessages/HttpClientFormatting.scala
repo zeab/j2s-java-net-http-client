@@ -1,7 +1,6 @@
-package com.github.zeab.j2sjavanethttpclient.seed.httpclientmessages
+package zeab.j2sjavanethttpclient.seed.httpclientmessages
 
-//Imports
-import com.github.zeab.j2sjavanethttpclient.seed.HttpHeaders.uniqueNameKey
+import zeab.j2sjavanethttpclient.seed.HttpHeaders.uniqueNameKey
 
 trait HttpClientFormatting {
 

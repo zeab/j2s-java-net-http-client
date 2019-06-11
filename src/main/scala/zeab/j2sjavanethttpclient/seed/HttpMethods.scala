@@ -1,4 +1,4 @@
-package com.github.zeab.j2sjavanethttpclient.seed
+package zeab.j2sjavanethttpclient.seed
 
 /** Http Methods for Http Calls */
 trait HttpMethods {

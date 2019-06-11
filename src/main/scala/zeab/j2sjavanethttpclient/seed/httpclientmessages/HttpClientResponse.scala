@@ -1,4 +1,4 @@
-package com.github.zeab.j2sjavanethttpclient.seed.httpclientmessages
+package zeab.j2sjavanethttpclient.seed.httpclientmessages
 
 case class HttpClientResponse(
                                requestTimestamp: String = "",
