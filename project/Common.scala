@@ -49,6 +49,7 @@ object Common {
       publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
     )
   }
+  
   def mapDockerLabels(name: String, version:String, buildTime:String): Map[String, String] = {
     Map(
       "org.label-schema.name" -> name,
