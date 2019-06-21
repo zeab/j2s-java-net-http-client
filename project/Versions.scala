@@ -2,6 +2,6 @@
 //Versions for all the modules
 object Versions {
 
-  val rootVersion: String = s"0.0.1"
+  val rootVersion: String = s"1.1.3"
 
 }
