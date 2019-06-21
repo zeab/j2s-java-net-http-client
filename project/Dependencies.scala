@@ -14,6 +14,7 @@ object Dependencies {
   val D = new {
     //Json
     val circeCore                   = "io.circe" %% "circe-parser" % V.circe
+    val circeParser                 = "io.circe" %% "circe-generic" % V.circe
     //Xml
     val aenea                       = "com.github.zeab" %% "aenea" % V.aenea
     //Test
@@ -23,7 +24,8 @@ object Dependencies {
   val rootDependencies: Seq[ModuleID] = Seq(
     D.scalaTest,
     D.aenea,
-    D.circeCore
+    D.circeCore,
+    D.circeParser
   )
 
 }

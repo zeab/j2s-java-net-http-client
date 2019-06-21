@@ -112,7 +112,7 @@ trait HttpClient {
                     val responseCode: Int = openConn.getResponseCode
                     val responseHeaders: Map[String, String] = removeNullFromHeaders(openConn)
 
-                    typeTag.tpe.typeSymbol.name match {
+                    typeTag.tpe.typeSymbol.name.toString match {
                       case "NoBody" =>
                         //Grab the timestamp here
                         val responseReceivedTimestamp: Long = System.currentTimeMillis()
