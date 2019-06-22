@@ -47,7 +47,7 @@ trait HttpClient extends HttpClientHelpers
     val timestamp: String = getTimestamp(metaData)
 
     //Clean up the headers and make sure none are empty
-    val stripEmptyHeaders: Map[String, String] = headers.filterNot(header => header._1 == "")
+    val stripEmptyHeaders: Map[String, String] = headers.filterNot{ case (header, _) => header == "" }
 
     //Change the body from a case class into the desired content type
     val possibleSerializedRequestBody: Either[Throwable, String] = serialization(body, stripEmptyHeaders)
