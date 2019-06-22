@@ -64,9 +64,9 @@ trait HttpClient extends HttpClientHelpers
               case openConn: HttpURLConnection =>
 
                 //Set Options
-                openConn.setConnectTimeout(metaData.find{ case (key, _) => key == connectTimeout}.getOrElse("" -> defaultConnectTimeoutInMs)._2.toInt)
-                openConn.setReadTimeout(metaData.find{ case (key, _) => key == readTimeout }.getOrElse("" -> defaultReadTimeoutInMs)._2.toInt)
-                openConn.setRequestProperty("User-Agent", metaData.find{ case (key, _) => key == userAgent}.getOrElse("" -> defaultUserAgent)._2)
+                openConn.setConnectTimeout(metaData.getOrElse(connectTimeout, defaultConnectTimeoutInMs).toInt)
+                openConn.setReadTimeout(metaData.getOrElse(readTimeout, defaultReadTimeoutInMs).toInt)
+                openConn.setRequestProperty("User-Agent", metaData.getOrElse(userAgent, defaultUserAgent))
 
                 //Set Method
                 openConn.setRequestMethod(standardizedMethod)

@@ -13,7 +13,7 @@ trait Serialization {
   def serialization[ReqBody](body: ReqBody, headers: Map[String, String])
                             (implicit encoder: Encoder[ReqBody]): Either[Throwable, String] = {
     //Change the body from a case class into the desired content type
-    headers.find(_._1 == contentType) match {
+    headers.find{ case (key, _) => key == contentType } match {
       case Some(contentTypeHeader) =>
         val (_, contentType) = contentTypeHeader
         contentType match {
