@@ -37,8 +37,8 @@ trait HttpClientHelpers {
 
   def getTimestamp(metaData: Map[String, String]): String =
     ZonedDateTime.now(
-      ZoneId.of(metaData.find(_._1 == zoneId).getOrElse("" -> defaultZoneId)._2))
+      ZoneId.of(metaData.find{ case (key, _) => key == zoneId}.getOrElse("" -> defaultZoneId)._2))
       .format(DateTimeFormatter
-        .ofPattern(metaData.find(_._1 == timestampFormat).getOrElse("" -> defaultTimestampFormat)._2))
+        .ofPattern(metaData.find{ case (key, _) => key == timestampFormat}.getOrElse("" -> defaultTimestampFormat)._2))
 
 }

@@ -14,7 +14,7 @@ trait Deserialization {
 
   def deserialization[RespBody](responseHeaders: Map[String, String], rawResponseBody: String)(implicit decoder: Decoder[RespBody], typeTag: TypeTag[RespBody]): Either[Throwable, RespBody] = {
     //Find the type we need to decode into
-    val decodeType: String = responseHeaders.find(_._1 == contentType) match {
+    val decodeType: String = responseHeaders.find{ case (key, _) => key == contentType } match {
       case Some(contentTypeHeader) =>
         val (_, contentType) = contentTypeHeader
         contentType
