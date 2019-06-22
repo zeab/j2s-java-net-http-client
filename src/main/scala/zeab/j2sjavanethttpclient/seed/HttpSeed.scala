@@ -1,5 +1,6 @@
 package zeab.j2sjavanethttpclient.seed
 
+//Imports
 import zeab.j2sjavanethttpclient.seed.HttpMethods.get
 
 case class HttpSeed(

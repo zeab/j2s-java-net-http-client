@@ -2,7 +2,7 @@ package zeab.urlbuilder
 
 //Imports
 import org.scalatest.FunSpec
-import zeab.j2sjavanethttpclient.seed.urlbuilder.urlbuilder.UrlBuilder
+import zeab.j2sjavanethttpclient.urlbuilder.UrlBuilder
 
 class UrlBuilderSpec extends FunSpec {
 

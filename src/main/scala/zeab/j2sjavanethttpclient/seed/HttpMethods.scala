@@ -1,6 +1,5 @@
 package zeab.j2sjavanethttpclient.seed
 
-/** Http Methods for Http Calls */
 trait HttpMethods {
   val get: String = "GET"
   val put: String = "PUT"
@@ -9,5 +8,4 @@ trait HttpMethods {
   val trace: String = "TRACE"
 }
 
-/** Http Methods for Http Calls */
 object HttpMethods extends HttpMethods

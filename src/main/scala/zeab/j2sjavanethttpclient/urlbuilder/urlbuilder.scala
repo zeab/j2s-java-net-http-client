@@ -1,4 +1,4 @@
-package zeab.j2sjavanethttpclient.seed.urlbuilder
+package zeab.j2sjavanethttpclient
 
 package object urlbuilder {
 
@@ -13,12 +13,12 @@ package object urlbuilder {
 
   sealed trait UrlBuilder
 
-  /** All the scheme dsl options*/
+  /** All the scheme dsl options */
   case class Schema(schema: String) extends UrlBuilder {
     def host(host: String): Host = Host(schema, host)
   }
 
-  /** All the host dsl options*/
+  /** All the host dsl options */
   case class Host(schema: String, host: String) extends UrlBuilder {
     override def toString: String = hostFormat(schema, host)
 
@@ -29,7 +29,7 @@ package object urlbuilder {
     def hostParameter(value: String): HostParameter = HostParameter(schema, host, None, List(value))
   }
 
-  /** All the port dsl options*/
+  /** All the port dsl options */
   case class Port(schema: String, host: String, port: Option[String]) extends UrlBuilder {
     override def toString: String = s"${hostFormat(schema, host)}${portFormat(port)}"
 
@@ -38,7 +38,7 @@ package object urlbuilder {
     def hostParameter(value: String): HostParameter = HostParameter(schema, host, port, List(value))
   }
 
-  /** All the host parameters dsl options*/
+  /** All the host parameters dsl options */
   case class HostParameter(schema: String, host: String, port: Option[String], hostParameter: List[String]) extends UrlBuilder {
     override def toString: String = s"${hostFormat(schema, host)}${portFormat(port)}${hostParametersFormat(hostParameter)}"
 
@@ -49,7 +49,7 @@ package object urlbuilder {
     def queryParameter(key: String, value: String): QueryParameter = QueryParameter(schema, host, port, hostParameter, Map(key -> value))
   }
 
-  /** All the query dsl options*/
+  /** All the query dsl options */
   case class QueryParameter(schema: String, host: String, port: Option[String], hostParameter: List[String], queryParameter: Map[String, String]) extends UrlBuilder {
     override def toString: String = {
       def buildQuery(queryParameters: Map[String, String]): String = {
@@ -72,7 +72,7 @@ package object urlbuilder {
     def queryParameter(key: String, value: String): QueryParameter = copy(schema, host, port, hostParameter, queryParameter ++ Map(key -> value))
   }
 
-  /** Start the schema building*/
+  /** Start the schema building */
   object UrlBuilder extends UrlBuilder {
     def schema(schema: String): Schema = Schema(schema)
   }

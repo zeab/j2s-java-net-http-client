@@ -1,8 +1,8 @@
-package zeab.j2sjavanethttpclient
+package zeab.archive
 
 //Imports
 import org.scalatest.FunSpec
-import zeab.j2sjavanethttpclient.httpclient.HttpClient
+import zeab.archive.httpclient.HttpClient
 
 class J2sJavaNetHttpClientSpec extends FunSpec {
 

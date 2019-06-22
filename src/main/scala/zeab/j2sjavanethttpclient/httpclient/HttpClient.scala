@@ -1,182 +1,159 @@
 package zeab.j2sjavanethttpclient.httpclient
 
 //Imports
+import zeab.aenea.{XmlDeserialize}
+import zeab.j2sjavanethttpclient.httpclient.HttpClientSettings._
+import zeab.j2sjavanethttpclient.httpclient.models.{HttpError, HttpResponse, NoBody}
+import zeab.j2sjavanethttpclient.seed.HttpContentTypes._
+import zeab.j2sjavanethttpclient.seed.HttpHeaders._
 import zeab.j2sjavanethttpclient.seed.HttpMethods.get
-import zeab.j2sjavanethttpclient.seed.HttpSeed
-import zeab.j2sjavanethttpclient.seed.authorization.BearerAuthorization
-import zeab.j2sjavanethttpclient.seed.httpclientmessages.{HttpClientError, HttpClientResponse}
 //Java
 import java.net.{HttpURLConnection, URL}
-import java.nio.charset.CodingErrorAction
-import java.text.SimpleDateFormat
-import java.util.Calendar
+//Circe
+import io.circe.parser.decode
+import io.circe.{Decoder, Encoder}
 //Scala
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.io.Codec
+import scala.io.BufferedSource
 import scala.io.Source.fromInputStream
+import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
-trait HttpClient {
+//Notes
+//Success Vs Failure... this is an indication weather the call was able to be made without an exception being thrown....
+//it does not indicate anything about the actual http call it self... as in a 500 will be a successful response since its not an exception...
 
-  def invokeAsyncHttpClientResponse(
-                                     httpSeed: HttpSeed,
-                                     isReturnBody: Boolean
-                                   )
-                                   (implicit executionContext: ExecutionContext): Future[Either[HttpClientError, HttpClientResponse]] =
-    Future(invokeHttpClientResponse(httpSeed.url, httpSeed.method, httpSeed.body, httpSeed.headers, httpSeed.metaData, isReturnBody))
+trait HttpClient extends HttpClientHelpers
+  with Serialization
+  with Deserialization {
 
-  def invokeHttpClientResponse(
-                                url: String,
-                                method: String = get,
-                                body: String = "",
-                                headers: Map[String, String] = Map.empty,
-                                metaData: Map[String, String] = Map.empty,
-                                isReturnBody: Boolean = true
-                              ): Either[HttpClientError, HttpClientResponse] = {
-    //TODO Hook these to read from the meta data and set if not found
-    val connectionTimeoutInMs: Int = 1000
-    val readTimeoutInMs: Int = 7000
-    val userAgent: String = "j2sjavanethttpclient"
-    //TODO Clean this up since idk if i really need it...
-    val cleanUpHeaders: Map[String, String] = headers.filter(h => h._1.nonEmpty)
-    //TODO Make the close connection configurable
-    val combinedHeaders: Map[String, String] = (authorization(url, method, body, cleanUpHeaders, metaData) ++ cleanUpHeaders ++ Map("Connection" -> "close")).filter(h => h._1.nonEmpty)
-    val callCreateTimeMark: Long = System.currentTimeMillis()
-    val timestamp: String = new SimpleDateFormat("yyyy-MM-dd-HH.mm.ss.SSS").format(Calendar.getInstance().getTime)
-    //TODO Add some safety around this where it wont blow up if you don't have a legit url...
-    Try(new URL(url).openConnection) match {
-      case Success(openConn) =>
-        openConn match {
-          case openConn: HttpURLConnection =>
-            //TODO... i think this charSet needs to come from the headers... i think...
-            val charSet: String = "UTF-8"
-            //TODO Make all these configurable
-            //Http Options
-            openConn.setConnectTimeout(connectionTimeoutInMs)
-            openConn.setReadTimeout(readTimeoutInMs)
-            openConn.setRequestProperty("User-Agent", userAgent)
-            //If were not getting a body don't bother opening the input stream
-            //TODO Setting the DoInput as false seemed like a good idea but I tried and no I think you don't actually get the response code back at all... the todo is to figure that out
-            //if (!isReturnBody) openConn.setDoInput(false)
-            //Methods Default is GET by java.net
-            openConn.setRequestMethod(method)
-            //Headers
-            combinedHeaders.foreach { header =>
-              val (headerKey, headerValue): (String, String) = header
-              openConn.setRequestProperty(headerKey, headerValue)
-            }
-            //Body
-            val requestBody: Option[HttpClientError] =
-              if (method != get) {
-                openConn.setDoOutput(true)
-                val attachBody: Try[Unit] =
-                  if (body == "") Try(openConn.setFixedLengthStreamingMode(0))
-                  else Try(openConn.getOutputStream.write(body.getBytes(charSet)))
-                attachBody match {
-                  case Success(_) => None
-                  case Failure(exception) =>
-                    val exceptionTimeMark: Long = System.currentTimeMillis()
-                    exception.toString match {
-                      case "java.net.SocketTimeoutException: connect timed out" => Some(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 10, exception.toString, "Unable to connect to the endpoint in a timely manner"))
-                      case "java.net.ConnectException: Connection refused (Connection refused)" => Some(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 20, exception.toString, "Check to make sure the service exists"))
-                      case "java.net.SocketTimeoutException: Read timed out" => Some(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 30, exception.toString, "Unable to get the body from the endpoint in a timely manner"))
-                      case _ => Some(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 0, exception.toString, exception.getMessage))
-                    }
+  def invokeAsyncHttp[ReqBody, RespBody](
+                                          url: String,
+                                          method: String = get,
+                                          body: ReqBody = "",
+                                          headers: Map[String, String] = Map.empty,
+                                          metaData: Map[String, String] = Map.empty
+                                        )(implicit executionContext: ExecutionContext, encoder: Encoder[ReqBody], decoder: Decoder[RespBody], typeTag: TypeTag[RespBody]): Future[Either[HttpError, HttpResponse[RespBody]]] =
+    Future(invokeHttp[ReqBody, RespBody](url, method, body, headers, metaData))
+
+  def invokeHttp[ReqBody, RespBody](
+                                     url: String,
+                                     method: String = get,
+                                     body: ReqBody = "",
+                                     headers: Map[String, String] = Map.empty,
+                                     metaData: Map[String, String] = Map.empty
+                                   )(implicit encoder: Encoder[ReqBody], decoder: Decoder[RespBody], typeTag: TypeTag[RespBody]): Either[HttpError, HttpResponse[RespBody]] = {
+
+    //Make sure the method is upper case because if complains if its not
+    val standardizedMethod: String = method.toUpperCase()
+
+    //Grab a timestamp for logging purposes
+    val timestamp: String = getTimestamp(metaData)
+
+    //Clean up the headers and make sure none are empty
+    val stripEmptyHeaders: Map[String, String] = headers.filterNot(_._1 == "")
+
+    //Change the body from a case class into the desired content type
+    val possibleSerializedRequestBody: Either[Throwable, String] = serialization(body, stripEmptyHeaders)
+
+    possibleSerializedRequestBody match {
+      case Right(reqBody) =>
+
+        //This is where the actual request starts timing how long it takes to make this request
+        val requestSentTimestamp: Long = System.currentTimeMillis()
+
+        Try(new URL(url).openConnection) match {
+          case Success(openConnection) =>
+            openConnection match {
+              case openConn: HttpURLConnection =>
+
+                //Set Options
+                openConn.setConnectTimeout(metaData.find(_._1 == connectTimeout).getOrElse("" -> defaultConnectTimeoutInMs)._2.toInt)
+                openConn.setReadTimeout(metaData.find(_._1 == readTimeout).getOrElse("" -> defaultReadTimeoutInMs)._2.toInt)
+                openConn.setRequestProperty("User-Agent", metaData.find(_._1 == userAgent).getOrElse("" -> defaultUserAgent)._2)
+
+                //Set Method
+                openConn.setRequestMethod(standardizedMethod)
+
+                //Headers
+                //Authorization is calculated here based on the keys in the meta data
+                val completedHeaders: Map[String, String] = authorization(url, standardizedMethod, reqBody, stripEmptyHeaders, metaData)
+                completedHeaders.foreach { header =>
+                  val (headerKey, headerValue): (String, String) = header
+                  openConn.setRequestProperty(headerKey, headerValue)
                 }
-              }
-              else None
-            //CHeck the connection and move on
-            requestBody match {
-              case Some(ex) => Left(ex)
-              case None =>
-                //TODO Figure out why i thought i needed flush in the first place
-                //openConn.getOutputStream.flush()
-                if (method != get) openConn.getOutputStream.close()
+
+                //Body
+                if (standardizedMethod != get) {
+                  openConn.setDoOutput(true)
+                  if (body == "") Try(openConn.setFixedLengthStreamingMode(0))
+                  else Try(openConn.getOutputStream.write(reqBody.getBytes(charSet)))
+                  Try(openConn.getOutputStream.close())
+                }
+
                 //Open the connection <- basically not doing this makes gets take twice as long... go figure
                 Try(openConn.connect()) match {
                   case Success(_) =>
-                    //TODO Clean up this entire section and remove the chevron pattern :)
-                    //Get the response details
-                    val t0: Long = System.currentTimeMillis()
-                    Try(openConn.getResponseCode) match {
-                      case Success(respCode) =>
-                        val t1: Long = System.currentTimeMillis()
-                        //TODO Make this configurable from metadata...? i think...?
-                        val responseBody: String =
-                          if (isReturnBody) {
-                            //TODO Grab this from the response header... i think... i think thats right...
-                            implicit val codec: Codec = Codec(charSet)
-                            codec.onUnmappableCharacter(CodingErrorAction.REPLACE)
-                            codec.onMalformedInput(CodingErrorAction.REPLACE)
-                            //Try the successful stream first and if we get an error try the error stream
-                            Try(fromInputStream(openConn.getInputStream).mkString) match {
-                              case Success(value) => value
-                              case Failure(_) =>
-                                Try(fromInputStream(openConn.getErrorStream).mkString) match {
-                                  case Success(value) => value
-                                  case Failure(ex) => ex.toString
-                                }
-                            }
+
+                    //Start grabbing response data
+                    val responseCode: Int = openConn.getResponseCode
+                    val responseHeaders: Map[String, String] = removeNullFromHeaders(openConn)
+
+                    typeTag.tpe.typeSymbol.name.toString match {
+                      case "NoBody" =>
+                        //Grab the timestamp here
+                        val responseReceivedTimestamp: Long = System.currentTimeMillis()
+                        Right(HttpResponse(timestamp, responseCode, responseHeaders, Right(NoBody().asInstanceOf[RespBody]), "", responseReceivedTimestamp - requestSentTimestamp, url, standardizedMethod, reqBody, completedHeaders, metaData))
+                      case _ =>
+                        //Read the incoming buffer sources
+                        val inputStream: Try[BufferedSource] = Try(fromInputStream(openConn.getInputStream))
+                        val errorStream: Try[BufferedSource] = Try(fromInputStream(openConn.getErrorStream))
+
+                        //There is a super odd thing here where if its a good then both will return success but if its bad then only 1 returns success
+                        val rawResponseBody: String =
+                          (inputStream, errorStream) match {
+                            case (Success(stream), Success(_)) =>
+                              val respBody: String = stream.mkString
+                              stream.close()
+                              respBody
+                            case (Failure(_), Success(stream)) =>
+                              val respBody: String = stream.mkString
+                              stream.close()
+                              respBody
+                            case _ => "unable to read either the input stream or the error stream"
                           }
-                          else "Body not decoded on purpose"
-                        //TODO Make the removal of the whitespaces a little more error checking where when i have text i enter a an extra space so they dont all get smashed together
-                        val response: HttpClientResponse = HttpClientResponse(timestamp, url, method, body, combinedHeaders, metaData, respCode, (t1 - t0).toInt, responseBody.replaceAll("[\n\r]", " "), removeNullFromHeaders(openConn))
-                        Try(openConn.getInputStream.close())
-                        Right(response)
-                      case Failure(ex) =>
-                        Try(openConn.getErrorStream.close())
-                        Left(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (System.currentTimeMillis() - t0).toInt, 4, ex.toString, ex.getMessage))
+
+                        //Grab the timestamp here since at this point all were doing is decoding the response which we already have completed
+                        val responseReceivedTimestamp: Long = System.currentTimeMillis()
+
+                        if (typeTag.tpe.typeSymbol.name.toString == "String")
+                          Right(HttpResponse(timestamp, responseCode, responseHeaders, Right(rawResponseBody.asInstanceOf[RespBody]), rawResponseBody, responseReceivedTimestamp - requestSentTimestamp, url, standardizedMethod, reqBody, completedHeaders, metaData))
+                        else {
+                          //decode the body into a case class
+                          val decodedBody: Either[Throwable, RespBody] = deserialization[RespBody](responseHeaders, rawResponseBody)
+                          //Give the response back to the user
+                          Right(HttpResponse(timestamp, responseCode, responseHeaders, decodedBody, rawResponseBody, responseReceivedTimestamp - requestSentTimestamp, url, standardizedMethod, reqBody, completedHeaders, metaData))
+                        }
                     }
-                  case Failure(exception) =>
-                    val exceptionTimeMark: Long = System.currentTimeMillis()
-                    exception.toString match {
-                      case "java.net.SocketTimeoutException: connect timed out" => Left(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 10, exception.toString, "Unable to connect to the endpoint in a timely manner"))
-                      case "java.net.ConnectException: Connection refused (Connection refused)" => Left(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 20, exception.toString, "Check to make sure the service exists"))
-                      case "java.net.SocketTimeoutException: Read timed out" => Left(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 30, exception.toString, "Unable to get the body from the endpoint in a timely manner"))
-                      case _ => Left(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (exceptionTimeMark - callCreateTimeMark).toInt, 0, exception.toString, exception.getMessage))
-                    }
+                  case Failure(ex) =>
+                    val exceptionReceivedTimestamp: Long = System.currentTimeMillis()
+                    Left(HttpError(timestamp, url, standardizedMethod, body.toString, completedHeaders, metaData, ex.toString, exceptionReceivedTimestamp - requestSentTimestamp))
                 }
+              case _ =>
+                val exceptionReceivedTimestamp: Long = System.currentTimeMillis()
+                Left(HttpError(timestamp, url, standardizedMethod, body.toString, stripEmptyHeaders, metaData, "Somehow we don't have an open HttpUrlConnection... never seen this happen ever...", exceptionReceivedTimestamp - requestSentTimestamp))
             }
-          case _ =>
-            //Never seen this happen yet...
-            Left(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (System.currentTimeMillis() - callCreateTimeMark).toInt, 1, "Error while attempting to get ConnectionObject"))
+          case Failure(ex) =>
+            val exceptionReceivedTimestamp: Long = System.currentTimeMillis()
+            Left(HttpError(timestamp, url, standardizedMethod, body.toString, stripEmptyHeaders, metaData, ex.toString, exceptionReceivedTimestamp - requestSentTimestamp))
         }
-      case Failure(ex) => Left(HttpClientError(timestamp, url, method, body, combinedHeaders, metaData, (System.currentTimeMillis() - callCreateTimeMark).toInt, 2, ex.toString, ex.getMessage))
+      case Left(ex) =>
+        Left(HttpError(timestamp, url, standardizedMethod, body.toString, stripEmptyHeaders, metaData, ex.toString, 0))
     }
   }
 
-  //This can be overridden with any authorization and if you wish to keep bearer auth just build that function into your new authorization
-  def authorization(url: String, method: String, body: String, headers: Map[String, String], metaData: Map[String, String]): Map[String, String] =
-    BearerAuthorization.bearerAuthorization(metaData)
-
-  //Format the response headers so they are easy to consume
-  private def removeNullFromHeaders(openConn: HttpURLConnection): Map[String, String] = {
-    //Map the java collection into scala
-    openConn.getHeaderFields.asScala.mapValues(_.asScala.toList).mapValues(_.toList).toMap.map { headers =>
-      val (headerKey, headerValues) = headers
-      //replaces nulls with strings of null so we don't blow up later
-      val hk = if (headerKey == null) "null" else headerKey
-      hk -> headerValues.mkString(" ")
-    }
-  }
-
-  def invokeAsyncHttpClientResponse(
-                                     url: String,
-                                     method: String,
-                                     body: String,
-                                     headers: Map[String, String],
-                                     metaData: Map[String, String],
-                                     isReturnBody: Boolean = true
-                                   )
-                                   (implicit executionContext: ExecutionContext): Future[Either[HttpClientError, HttpClientResponse]] =
-    Future(invokeHttpClientResponse(url, method, body, headers, metaData, isReturnBody))
-
-  def invokeHttpClientResponse(
-                                httpSeed: HttpSeed,
-                                isReturnBody: Boolean
-                              ): Either[HttpClientError, HttpClientResponse] =
-    invokeHttpClientResponse(httpSeed.url, httpSeed.method, httpSeed.body, httpSeed.headers, httpSeed.metaData, isReturnBody)
+  //TODO change this back to doing the bearer token or nothing if nothing is present
+  def authorization(url: String, method: String, body: String, headers: Map[String, String], metaData: Map[String, String]): Map[String, String] = headers
 
 }
 
