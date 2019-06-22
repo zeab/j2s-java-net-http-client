@@ -5,14 +5,14 @@ import zeab.aenea.XmlDeserialize
 import zeab.j2sjavanethttpclient.seed.HttpContentTypes._
 import zeab.j2sjavanethttpclient.seed.HttpHeaders._
 //Circe
-import io.circe.parser.decode
 import io.circe.Decoder
+import io.circe.parser.decode
 //Scala
 import scala.reflect.runtime.universe._
 
 trait Deserialization {
 
-  def deserialization[RespBody](responseHeaders:Map[String, String], rawResponseBody:String)(implicit decoder: Decoder[RespBody], typeTag: TypeTag[RespBody]): Either[Throwable, RespBody] ={
+  def deserialization[RespBody](responseHeaders: Map[String, String], rawResponseBody: String)(implicit decoder: Decoder[RespBody], typeTag: TypeTag[RespBody]): Either[Throwable, RespBody] = {
     //Find the type we need to decode into
     val decodeType: String = responseHeaders.find(_._1 == contentType) match {
       case Some(contentTypeHeader) =>

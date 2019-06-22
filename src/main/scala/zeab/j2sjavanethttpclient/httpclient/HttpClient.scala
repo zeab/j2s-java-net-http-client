@@ -1,16 +1,12 @@
 package zeab.j2sjavanethttpclient.httpclient
 
 //Imports
-import zeab.aenea.{XmlDeserialize}
 import zeab.j2sjavanethttpclient.httpclient.HttpClientSettings._
 import zeab.j2sjavanethttpclient.httpclient.models.{HttpError, HttpResponse, NoBody}
-import zeab.j2sjavanethttpclient.seed.HttpContentTypes._
-import zeab.j2sjavanethttpclient.seed.HttpHeaders._
 import zeab.j2sjavanethttpclient.seed.HttpMethods.get
 //Java
 import java.net.{HttpURLConnection, URL}
 //Circe
-import io.circe.parser.decode
 import io.circe.{Decoder, Encoder}
 //Scala
 import scala.concurrent.{ExecutionContext, Future}
