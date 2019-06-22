@@ -1,14 +1,12 @@
 package zeab.j2sjavanethttpclient.httpclient
 
 //Imports
-import java.nio.charset.CodingErrorAction
-
 import zeab.j2sjavanethttpclient.httpclient.HttpClientSettings._
-
-import scala.io.Codec
 //Scala
+import scala.io.Codec
 import scala.collection.JavaConverters._
 //Java
+import java.nio.charset.CodingErrorAction
 import java.net.HttpURLConnection
 import java.time.format.DateTimeFormatter
 import java.time.{ZoneId, ZonedDateTime}
@@ -37,8 +35,8 @@ trait HttpClientHelpers {
 
   def getTimestamp(metaData: Map[String, String]): String =
     ZonedDateTime.now(
-      ZoneId.of(metaData.find{ case (key, _) => key == zoneId}.getOrElse("" -> defaultZoneId)._2))
+      ZoneId.of(metaData.getOrElse(zoneId, defaultZoneId)))
       .format(DateTimeFormatter
-        .ofPattern(metaData.find{ case (key, _) => key == timestampFormat}.getOrElse("" -> defaultTimestampFormat)._2))
+        .ofPattern(metaData.getOrElse(timestampFormat, defaultTimestampFormat)))
 
 }
