@@ -1,5 +1,5 @@
 # j2s-java-net-http-client
-Scala wrapper around Java.net Http Client
+Scala wrapper around Java.net Http Client with automatic case class support for json and xml (Circe and Aenea)
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.zeab/j2sjavanethttpclient_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.zeab/j2sjavanethttpclient_2.12)
 [![Build Status](https://travis-ci.org/zeab/j2s-java-net-http-client.svg?branch=master)](https://travis-ci.org/zeab/j2s-java-net-http-client)
