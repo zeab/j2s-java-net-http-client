@@ -7,10 +7,46 @@ Scala wrapper around Java.net Http Client
 
 Sync Example: 
 ```scala
-HttpClient.invokeHttpClientResponse("http://google.com")
+import io.circe.generic.auto._
+import zeab.j2sjavanethttpclient.httpclient.HttpClient
+HttpClient.invokeHttp[String, String](http://google.com)
 ```
    
 Async Example: 
 ```scala
-HttpClient.invokeAsyncHttpClientResponse("http://google.com")
+import io.circe.generic.auto._
+import zeab.j2sjavanethttpclient.httpclient.HttpClient
+HttpClient.invokeAsyncHttp[String, String](http://google.com)
 ```
+
+Request and Response Bodys:
+```scala
+import io.circe.generic.auto._
+import zeab.j2sjavanethttpclient.httpclient.HttpClient
+
+case class MyRequest(id:String)
+case class MyResponse(id:String)
+
+HttpClient.invokeHttp[MyRequest, MyResponse](http://google.com, "POST", MyRequest("1"), Map("Content-Type" -> "application/json", "Accept" -> "application/json"))
+```
+
+Performance Mode (skips dealing with the response body completely): 
+```scala
+import io.circe.generic.auto._
+import zeab.j2sjavanethttpclient.httpclient.HttpClient
+HttpClient.invokeHttp[String, NoBody](http://google.com)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
