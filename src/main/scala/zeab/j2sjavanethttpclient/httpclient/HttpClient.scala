@@ -1,9 +1,9 @@
 package zeab.j2sjavanethttpclient.httpclient
 
 //Imports
+import zeab.httpseed.{HttpError, HttpResponse, NoBody}
 import zeab.j2sjavanethttpclient.httpclient.HttpClientSettings._
-import zeab.j2sjavanethttpclient.httpclient.models.{HttpError, HttpResponse, NoBody}
-import zeab.j2sjavanethttpclient.seed.HttpMethods.get
+import zeab.httpseed.HttpMethods.get
 //Java
 import java.net.{HttpURLConnection, URL}
 //Circe
@@ -22,6 +22,8 @@ import scala.util.{Failure, Success, Try}
 trait HttpClient extends HttpClientHelpers
   with Serialization
   with Deserialization {
+
+  //TODO Add Http Seed Support back in...
 
   def invokeAsyncHttp[ReqBody, RespBody](
                                           url: String,

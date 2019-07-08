@@ -2,8 +2,8 @@ package zeab.j2sjavanethttpclient.httpclient
 
 //Imports
 import zeab.aenea.XmlSerialize
-import zeab.j2sjavanethttpclient.seed.HttpContentTypes._
-import zeab.j2sjavanethttpclient.seed.HttpHeaders._
+import zeab.httpseed.HttpContentTypes._
+import zeab.httpseed.HttpHeaders._
 //Circe
 import io.circe.Encoder
 import io.circe.syntax._
