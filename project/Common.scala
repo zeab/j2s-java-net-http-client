@@ -9,9 +9,14 @@ import sbt.librarymanagement.{Developer, ScmInfo}
 object Common {
 
   //Common Settings
-  val useScalaVersion: String = "2.12.6"
+  val useScalaVersion: String = "2.12.8"
   val useOrganization: String = "com.github.zeab"
-
+  val useHomepage: String = "https://github.com/zeab/j2s-java-net-http-client"
+  val useGitHomepage:String = "https://github.com/zeab/j2s-java-net-http-client.git"
+  val useDevName: String = "Kevin Kosnik-Downs"
+  val useDevEmail: String = "pyrosrppltoo@gmail.com"
+  val useDevGithub: String = "https://github.com/zeab"
+  
   //Get the current build time since epoch
   val buildTime: String = Instant.now.getEpochSecond.toString
 
@@ -32,8 +37,8 @@ object Common {
       version := versionNumber,
       scalaVersion := useScalaVersion,
       organization := useOrganization,
-      homepage := Some(url("https://github.com/zeab/j2s-java-net-http-client")),
-      scmInfo := Some(ScmInfo(url("https://github.com/zeab/j2s-java-net-http-client"), "https://github.com/zeab/j2s-java-net-http-client.git")),
+      homepage := Some(url(useHomepage)),
+      scmInfo := Some(ScmInfo(url(useHomepage), useGitHomepage)),
       licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
       publishMavenStyle := true,
       publishTo := Some(
@@ -41,14 +46,16 @@ object Common {
         else Opts.resolver.sonatypeStaging
       ),
       developers := List(
-        Developer( "com.github.zeab",
-          "Kevin Kosnik-Downs",
-          "pyrosrppltoo@gmail.com",
-          url("https://github.com/zeab"))),
-      publishConfiguration := publishConfiguration.value.withOverwrite(true),
-      publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
+        Developer(
+          useOrganization,
+          useDevName,
+          useDevEmail,
+          url(useDevGithub))),
+      //publishConfiguration := publishConfiguration.value.withOverwrite(true),
+      //publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
     )
   }
+  
   def mapDockerLabels(name: String, version:String, buildTime:String): Map[String, String] = {
     Map(
       "org.label-schema.name" -> name,
