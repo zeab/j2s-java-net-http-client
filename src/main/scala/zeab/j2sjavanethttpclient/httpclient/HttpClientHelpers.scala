@@ -25,7 +25,7 @@ trait HttpClientHelpers {
   //Format the response headers so they are easy to consume
   def removeNullFromHeaders(openConn: HttpURLConnection): Map[String, String] = {
     //Map the java collection into scala
-    openConn.getHeaderFields.asScala.mapValues(_.asScala.toList).mapValues(_.toList).toMap.map { headers =>
+    openConn.getHeaderFields.asScala.mapValues(_.asScala.toList).mapValues(_.toList).toMap.map { headers: (String, List[String]) =>
       val (headerKey, headerValues): (String, List[String]) = headers
       //replaces nulls with strings of null so we don't blow up later
       val hk: String = if (headerKey == null) "null" else headerKey
@@ -34,9 +34,8 @@ trait HttpClientHelpers {
   }
 
   def getTimestamp(metaData: Map[String, String]): String =
-    ZonedDateTime.now(
-      ZoneId.of(metaData.getOrElse(zoneId, defaultZoneId)))
+    ZonedDateTime.now(ZoneId.of(metaData.getOrElse(zoneId, defaultZoneId)))
       .format(DateTimeFormatter
-        .ofPattern(metaData.getOrElse(timestampFormat, defaultTimestampFormat)))
-
+      .ofPattern(metaData.getOrElse(timestampFormat, defaultTimestampFormat)))
+  
 }

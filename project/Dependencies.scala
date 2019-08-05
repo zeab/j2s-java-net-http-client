@@ -5,8 +5,8 @@ object Dependencies {
 
   //List of Versions
   val V = new {
-    val aenea                       = "1.0.0"
-    val circe                       = "0.9.3"
+    val aenea                       = "2.0.0"
+    val circe                       = "0.11.1"
     val scalaTest                   = "3.0.5"
     val httpSeed                    = "1.0.+"
   }

@@ -3,7 +3,7 @@ language: scala
 dist: xenial
 
 scala:
-   - 2.12.6
+   - 2.12.8
 
 branches:
   only:

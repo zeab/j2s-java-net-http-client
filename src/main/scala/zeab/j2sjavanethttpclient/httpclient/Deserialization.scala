@@ -1,7 +1,7 @@
 package zeab.j2sjavanethttpclient.httpclient
 
 //Import
-import zeab.aenea.XmlDeserialize
+import zeab.aenea.XmlDeserializer._
 import zeab.httpseed.HttpContentTypes._
 import zeab.httpseed.HttpHeaders._
 //Circe
@@ -16,7 +16,7 @@ trait Deserialization {
     //Find the type we need to decode into
     val decodeType: String = responseHeaders.find{ case (key, _) => key == contentType } match {
       case Some(contentTypeHeader) =>
-        val (_, contentType) = contentTypeHeader
+        val (_, contentType): (_, String) = contentTypeHeader
         contentType
       case None => ""
     }
@@ -24,10 +24,7 @@ trait Deserialization {
     //Actually attempt to convert the string representation into an actual case class
     decodeType match {
       case respHeader if respHeader.contains(applicationXml) =>
-        XmlDeserialize.xmlDeserialize[RespBody](rawResponseBody) match {
-          case Right(bdy) => Right(bdy)
-          case Left(ex) => Left(ex)
-        }
+        rawResponseBody.fromXml[RespBody]
       case respHeader if respHeader == applicationJson =>
         decode[RespBody](rawResponseBody) match {
           case Right(bdy) => Right(bdy)
