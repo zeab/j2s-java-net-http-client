@@ -25,11 +25,7 @@ object Dependencies {
   }
 
   val rootDependencies: Seq[ModuleID] = Seq(
-    D.scalaTest,
-    D.aenea,
-    D.circeCore,
-    D.circeParser,
-    D.httpSeed
+    D.scalaTest
   )
 
 }
