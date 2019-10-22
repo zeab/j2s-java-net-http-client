@@ -1,15 +1,15 @@
 package zeab.j2sjavanet.httpclient
 
 //Imports
+import zeab.j2sjavanet.httpclient.models.{HttpError, HttpResponse, HttpResponseRaw}
+//Java
 import java.net.{HttpURLConnection, URL}
 import java.nio.charset.CodingErrorAction
-
-import zeab.j2sjavanet.httpclient.models.{HttpError, HttpResponse, HttpResponseRaw}
-
-import scala.util.{Failure, Success, Try}
+//Scala
 import scala.collection.JavaConverters._
-import scala.io.{BufferedSource, Codec}
 import scala.io.Source.fromInputStream
+import scala.io.{BufferedSource, Codec}
+import scala.util.{Failure, Success, Try}
 
 trait HttpClient {
 
