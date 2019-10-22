@@ -1,27 +1,23 @@
-//package zeab.j2sjavanethttpclient.httpclient
+//package otherother.httpclient
 //
-////Imports
-//import zeab.httpseed.{HttpError, HttpResponse, NoBody}
-//import zeab.j2sjavanethttpclient.httpclient.HttpClientSettings._
-//import zeab.httpseed.HttpMethods.get
-////Java
 //import java.net.{HttpURLConnection, URL}
-////Circe
+//
+//import io.circe.generic.AutoDerivation
+//
+//import scala.reflect.runtime.universe._
 //import io.circe.{Decoder, Encoder}
-////Scala
+//import other.MyClass
+//import zeab.httpseed.HttpMethods.get
+//import zeab.httpseed.{HttpError, HttpResponse, NoBody}
+//import zeab.j2sjavanethttpclient.httpclient.{HttpClient, HttpClientHelpers, Serialization}
+//import zeab.j2sjavanethttpclient.httpclient.HttpClientSettings.{connectTimeout, defaultConnectTimeoutInMs, defaultReadTimeoutInMs, defaultUserAgent, readTimeout, userAgent}
+//
 //import scala.concurrent.{ExecutionContext, Future}
 //import scala.io.BufferedSource
 //import scala.io.Source.fromInputStream
-//import scala.reflect.runtime.universe._
 //import scala.util.{Failure, Success, Try}
 //
-////Notes
-////Success Vs Failure... this is an indication weather the call was able to be made without an exception being thrown....
-////it does not indicate anything about the actual http call it self... as in a 500 will be a successful response since its not an exception...
-//
-//trait HttpClient extends HttpClientHelpers
-//  with Serialization
-//  with Deserialization {
+//trait HttpClient extends HttpClientHelpers{
 //
 //  //TODO Add Http Seed Support back in...
 //
@@ -40,7 +36,7 @@
 //                                     body: ReqBody = "",
 //                                     headers: Map[String, String] = Map.empty,
 //                                     metaData: Map[String, String] = Map.empty
-//                                   )(implicit encoder: Encoder[ReqBody], decoder: Decoder[RespBody], typeTag: TypeTag[RespBody]): Either[HttpError, HttpResponse[RespBody]] = {
+//                                   )(implicit typeTag: TypeTag[RespBody]): Either[HttpError, HttpResponse[RespBody]] = {
 //
 //    //Make sure the method is upper case because if complains if its not
 //    val standardizedMethod: String = method.toUpperCase()
@@ -52,7 +48,8 @@
 //    val stripEmptyHeaders: Map[String, String] = headers.filterNot{ case (header, _) => header == "" }
 //
 //    //Change the body from a case class into the desired content type
-//    val possibleSerializedRequestBody: Either[Throwable, String] = serialization(body, stripEmptyHeaders)
+//    val possibleSerializedRequestBody: Either[Throwable, String] =
+//      seri2[ReqBody](ooo[ReqBody], body) //serialization(body, stripEmptyHeaders)
 //
 //    possibleSerializedRequestBody match {
 //      case Right(reqBody) =>
@@ -128,7 +125,8 @@
 //                          Right(HttpResponse(timestamp, responseCode, responseHeaders, Right(rawResponseBody.asInstanceOf[RespBody]), rawResponseBody, responseReceivedTimestamp - requestSentTimestamp, url, standardizedMethod, reqBody, completedHeaders, metaData))
 //                        else {
 //                          //decode the body into a case class
-//                          val decodedBody: Either[Throwable, RespBody] = deserialization[RespBody](responseHeaders, rawResponseBody)
+//                          val decodedBody: Either[Throwable, RespBody] = //deserialization[RespBody](responseHeaders, rawResponseBody)
+//                          Right("".asInstanceOf[RespBody])
 //                          //Give the response back to the user
 //                          Right(HttpResponse(timestamp, responseCode, responseHeaders, decodedBody, rawResponseBody, responseReceivedTimestamp - requestSentTimestamp, url, standardizedMethod, reqBody, completedHeaders, metaData))
 //                        }
@@ -153,6 +151,53 @@
 //  //TODO change this back to doing the bearer token or nothing if nothing is present
 //  def authorization(url: String, method: String, body: String, headers: Map[String, String], metaData: Map[String, String]): Map[String, String] = headers
 //
+//  def seri2[A](f: A => Either[Throwable, String], obj: A): Either[Throwable, String] = f(obj)
+//  def ooo[A]: A => Either[Throwable, String] = {a => Right(a.toString)}
+//
 //}
 //
-//object HttpClient extends HttpClient
+//object HttpClient extends HttpClient with Serialization{
+//  import zeab.aenea.XmlSerializer._
+//  import io.circe.generic.auto._
+//
+//  override def seri2[A](f: A => Either[Throwable, String], obj: A): Either[Throwable, String] = {
+//
+//    def y[E: Encoder] = serialization(obj, Map.empty)
+//
+//    def x(implicit encoder: Encoder[A]) = serialization(obj, Map.empty)
+//    y
+//    println()
+//    f(obj)
+//  }
+//
+////  override def ooo[A]: A => Either[Throwable, String] ={a =>
+////    val eee = a.getClass.getName
+////    println()
+////    //lazy implicit val fooDecoder: Decoder[MyClass] = deriveDecoder[MyClass]
+////    //lazy implicit val fooEncoder: Encoder[MyClass] = deriveEncoder[MyClass]
+////    //implicit val fooEncoderaaa: Encoder[A] = deriveEncoder[A]
+////    //fooEncoderaaa
+////    //implicit def helloEncoder[A: Encoder]: Encoder[MyClass] = deriveEncoder
+////    //val f = MyClass(4)
+////    val s = serialization(a, Map.empty)
+////    //ooo1[A]
+////    //val yy = f.asXml
+////
+////   // yy
+////    s
+////  }
+//
+////  val g = MyClass(6)
+////  val s = serialization(g, Map.empty)
+////  def ooo1[A]: A => Either[Throwable, String] = {a =>
+////    serialization[A](a, Map.empty)
+////  }
+//
+////  def ooo1[A]: A => Either[Throwable, String] = {a =>
+////    val jj = a
+////    println()
+////    val g = MyClass(6)
+////    val s = serialization(a, Map.empty)
+////    Right(a.toString)
+////  }
+//}

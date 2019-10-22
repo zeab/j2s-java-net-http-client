@@ -6,7 +6,8 @@ import sbt.Def
 
 //Settings
 object Settings {
-
-  val rootSettings: Seq[Def.Setting[_]] = seqBaseProjectTemplate(rootVersion)
-
+  val coreSettings: Seq[Def.Setting[_]] = seqBaseProjectTemplate(coreVersion)
+  val fullSettings: Seq[Def.Setting[_]] = seqBaseProjectTemplate(fullVersion)
+  val jsonSupportSettings: Seq[Def.Setting[_]] = seqBaseProjectTemplate(jsonSupportVersion)
+  val xmlSupportSettings: Seq[Def.Setting[_]] = seqBaseProjectTemplate(xmlSupportVersion)
 }

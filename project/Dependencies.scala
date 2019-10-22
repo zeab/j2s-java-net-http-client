@@ -24,12 +24,24 @@ object Dependencies {
     val scalaTest                   = "org.scalatest" %% "scalatest" % V.scalaTest
   }
 
-  val rootDependencies: Seq[ModuleID] = Seq(
+  val coreDependencies: Seq[ModuleID] = Seq(
     D.scalaTest,
-    D.aenea,
+    D.httpSeed
+  )
+
+  val fullDependencies: Seq[ModuleID] = Seq(
     D.circeCore,
     D.circeParser,
-    D.httpSeed
+    D.aenea
+  )
+
+  val jsonSupportDependencies: Seq[ModuleID] = Seq(
+    D.circeCore,
+    D.circeParser
+  )
+
+  val xmlSupportDependencies: Seq[ModuleID] = Seq(
+    D.aenea
   )
 
 }

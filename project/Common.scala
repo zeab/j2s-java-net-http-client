@@ -50,9 +50,9 @@ object Common {
           useOrganization,
           useDevName,
           useDevEmail,
-          url(useDevGithub)))
-      //publishConfiguration := publishConfiguration.value.withOverwrite(true),
-      //publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
+          url(useDevGithub))),
+      publishConfiguration := publishConfiguration.value.withOverwrite(true),
+      publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
     )
   }
   
