@@ -9,4 +9,4 @@ case class HttpError(
                       requestHeaders: Map[String, String],
                       requestMetadata: Map[String, String],
                       durationInMs: Long
-                    )
+                    ) extends Throwable

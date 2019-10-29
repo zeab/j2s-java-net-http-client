@@ -23,7 +23,7 @@ trait HttpClient {
                       body: String = "",
                       headers: Map[String, String] = Map.empty,
                       metaData: Map[String, String] = Map.empty
-                    ): Either[HttpError, HttpResponse] = {
+                    ): Either[Throwable, HttpResponse] = {
 
     //Replace any invalid char's in the url's with the correct encoding
     val standardizedUrl: String =
@@ -56,6 +56,7 @@ trait HttpClient {
             openConn.setConnectTimeout(connectTimeoutInMs.toInt)
             openConn.setReadTimeout(readTimeoutInMs.toInt)
             openConn.setRequestProperty("User-Agent", userAgent)
+            openConn.setInstanceFollowRedirects(false)
 
             //Set Method
             openConn.setRequestMethod(standardizedMethod)

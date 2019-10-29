@@ -2,7 +2,7 @@ package zeab.j2sjavanet.httpclient.models
 
 case class HttpResponseDecoded[RespBody](
                                           responseStatusCode: Int,
-                                          responseBody: Either[Throwable, RespBody],
+                                          responseBody: RespBody,
                                           responseHeaders: Map[String, String],
                                           requestUrl: String,
                                           requestMethod: String,
