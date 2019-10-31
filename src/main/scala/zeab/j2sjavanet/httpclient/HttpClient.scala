@@ -22,7 +22,7 @@ trait HttpClient {
                       method: String = "GET",
                       body: String = "",
                       headers: Map[String, String] = Map.empty,
-                      metaData: Map[String, String] = Map.empty
+                      metadata: Map[String, String] = Map.empty
                     ): Either[Throwable, HttpResponse] = {
 
     //Replace any invalid char's in the url's with the correct encoding
@@ -40,9 +40,9 @@ trait HttpClient {
     val standardizedMethod: String = method.toUpperCase()
 
     //Connection Settings
-    val connectTimeoutInMs: String = metaData.find(_._1.toLowerCase == "connecttimeoutinms").map(_._2).getOrElse(defaultConnectTimeoutInMs)
-    val readTimeoutInMs: String = metaData.find(_._1.toLowerCase == "readtimeoutinms").map(_._2).getOrElse(defaultReadTimeoutInMs)
-    val userAgent: String = metaData.find(_._1.toLowerCase == "useragent").map(_._2).getOrElse(defaultUserAgent)
+    val connectTimeoutInMs: String = findMetadataValue(metadata, "connecttimeoutinms", defaultConnectTimeoutInMs)
+    val readTimeoutInMs: String = findMetadataValue(metadata, "readtimeoutinms", defaultReadTimeoutInMs)
+    val userAgent: String = findMetadataValue(metadata,"useragent", defaultUserAgent )
 
     //Set the Charset to be used
     val charSet: String = "UTF-8"
@@ -62,7 +62,7 @@ trait HttpClient {
             openConn.setRequestMethod(standardizedMethod)
 
             //Set Headers
-            val standardizedHeaders: Map[String, String] = authorization(standardizedUrl, standardizedMethod, body, headers, metaData)
+            val standardizedHeaders: Map[String, String] = authorization(standardizedUrl, standardizedMethod, body, headers, metadata)
             standardizedHeaders.foreach { header: (String, String) =>
               val (headerKey, headerValue): (String, String) = header
               openConn.setRequestProperty(headerKey, headerValue)
@@ -118,23 +118,23 @@ trait HttpClient {
                       }
 
                     //Return the response
-                    Right(HttpResponseRaw(responseStatusCode, responseBody, responseHeaders, standardizedUrl, method, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
+                    Right(HttpResponseRaw(responseStatusCode, responseBody, responseHeaders, standardizedUrl, method, body, standardizedHeaders, metadata, System.currentTimeMillis() - timestamp))
                   case Left(ex) =>
-                    Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
+                    Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, standardizedHeaders, metadata, System.currentTimeMillis() - timestamp))
                 }
               case Failure(ex) =>
-                Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
+                Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, standardizedHeaders, metadata, System.currentTimeMillis() - timestamp))
             }
           case _ =>
-            Left(HttpException("Unable to get an HttpUrlConnection... for some reason", "", 0, "", Map.empty, standardizedUrl, standardizedMethod, body, headers, metaData, 0))
+            Left(HttpException("Unable to get an HttpUrlConnection... for some reason", "", 0, "", Map.empty, standardizedUrl, standardizedMethod, body, headers, metadata, 0))
         }
       case Failure(ex) =>
-        Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, headers, metaData, 0))
+        Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, headers, metadata, 0))
     }
   }
 
   //Enable the authorization to be overridden when necessary
-  def authorization(url: String, method: String, body: String, headers: Map[String, String], metaData: Map[String, String]): Map[String, String] = headers
+  def authorization(url: String, method: String, body: String, headers: Map[String, String], metadata: Map[String, String]): Map[String, String] = headers
 
   //Format the response headers so they are easy to consume
   private def removeNullFromHeaders(openConn: HttpURLConnection): Map[String, String] = {
@@ -154,6 +154,11 @@ trait HttpClient {
       case Failure(_) => "Cause is blank"
       case Success(cause) => cause.toString
     }
+  }
+
+  private def findMetadataValue(metadata: Map[String, String], key: String, default: String): String ={
+    metadata.find{ case (metadataKey:String, _) => metadataKey.toLowerCase == key}
+      .map{case (_, value:String) => value}.getOrElse(default)
   }
 
 }
