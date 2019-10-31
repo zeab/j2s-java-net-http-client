@@ -1,7 +1,7 @@
 package zeab.j2sjavanet.httpclient
 
 //Imports
-import zeab.j2sjavanet.httpclient.models.{HttpError, HttpResponse, HttpResponseRaw}
+import zeab.j2sjavanet.httpclient.models.{HttpException, HttpResponse, HttpResponseRaw}
 //Java
 import java.net.{HttpURLConnection, URL}
 import java.nio.charset.CodingErrorAction
@@ -120,16 +120,16 @@ trait HttpClient {
                     //Return the response
                     Right(HttpResponseRaw(responseStatusCode, responseBody, responseHeaders, standardizedUrl, method, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
                   case Left(ex) =>
-                    Left(HttpError(ex.toString, "", standardizedUrl, standardizedMethod, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
+                    Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
                 }
               case Failure(ex) =>
-                Left(HttpError(ex.toString, "", standardizedUrl, standardizedMethod, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
+                Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, standardizedHeaders, metaData, System.currentTimeMillis() - timestamp))
             }
           case _ =>
-            Left(HttpError("something happened that ive never seen before", "", standardizedUrl, standardizedMethod, body, headers, metaData, 0))
+            Left(HttpException("Unable to get an HttpUrlConnection... for some reason", "", 0, "", Map.empty, standardizedUrl, standardizedMethod, body, headers, metaData, 0))
         }
       case Failure(ex) =>
-        Left(HttpError(ex.toString, "", standardizedUrl, standardizedMethod, body, headers, metaData, 0))
+        Left(HttpException(ex.toString, unwrapCause(ex.getCause), 0, "", Map.empty, standardizedUrl, standardizedMethod, body, headers, metaData, 0))
     }
   }
 
@@ -146,6 +146,13 @@ trait HttpClient {
       //replaces nulls with strings of null so we don't blow up later
       val hk: String = if (headerKey == null) "null" else headerKey
       hk -> headerValues.mkString(" ")
+    }
+  }
+
+  private def unwrapCause(ex: Throwable): String = {
+    Try(ex.getCause) match {
+      case Failure(_) => "Cause is blank"
+      case Success(cause) => cause.toString
     }
   }
 
